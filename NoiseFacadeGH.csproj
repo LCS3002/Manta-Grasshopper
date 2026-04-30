@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>NoiseFacadeGH</AssemblyName>
-    <RootNamespace>NoiseFacadeGH</RootNamespace>
+    <AssemblyName>BatGH</AssemblyName>
+    <RootNamespace>BatGH</RootNamespace>
     <OutputType>Library</OutputType>
     <LangVersion>7.3</LangVersion>
     <Optimize>true</Optimize>
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <!-- exclude sub-projects so their generated files aren't picked up -->
+    <!-- exclude old monolith and sub-projects -->
+    <Compile Remove="NoiseFacadeComponent.cs" />
     <Compile Remove="MathTest\**\*" />
     <Compile Remove="GenerateIcon\**\*" />
     <EmbeddedResource Remove="MathTest\**\*" />
@@ -18,8 +19,14 @@
     <None Remove="GenerateIcon\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="NoiseFacade_24.png" />
-    <EmbeddedResource Include="NoiseFacade_48.png" />
+    <EmbeddedResource Include="Bat_24.png" />
+    <EmbeddedResource Include="Bat_48.png" />
+    <EmbeddedResource Include="BatSource_24.png" />
+    <EmbeddedResource Include="BatMesh_24.png" />
+    <EmbeddedResource Include="BatNoise_24.png" />
+    <EmbeddedResource Include="BatInterior_24.png" />
+    <EmbeddedResource Include="BatContours_24.png" />
+    <EmbeddedResource Include="BatLegend_24.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="RhinoCommon">
