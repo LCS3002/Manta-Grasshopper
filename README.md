@@ -13,13 +13,13 @@
 </p>
 
 > **Environmental analysis for Grasshopper — one plugin, all physics.**  
-> Acoustic noise heat-maps, animated wind streamlines, solar path sweep, pressure wavefronts. Self-contained, no Ladybug required.
+> Acoustic noise heat-maps, animated wind streamlines, solar path sweep, pressure wavefronts. Self-contained, no external dependencies.
 
 ---
 
 ## Why "Manta"?
 
-Manta rays are masters of fluid dynamics — they read pressure fields, glide on curl vortices, and navigate by sensing wave propagation. Manta does the same: it simulates acoustic noise as ray-cast energy fields, wind as a divergence-free curl-noise velocity field, and solar radiation as a real-time shadow sweep. The name fits the Grasshopper animal-plugin tradition (Ladybug, Weaverbird, Kangaroo…).
+Manta rays are masters of fluid dynamics — they read pressure fields, glide on curl vortices, and navigate by sensing wave propagation. Manta does the same: it simulates acoustic noise as ray-cast energy fields, wind as a divergence-free curl-noise velocity field, and solar radiation as a real-time shadow sweep. The name fits the Grasshopper animal-plugin tradition (Weaverbird, Kangaroo, Pufferfish…).
 
 ---
 
@@ -293,7 +293,7 @@ Copy `Manta.gha` to `%APPDATA%\Grasshopper\Libraries\` and restart Rhino.
 
 - Rhino 8 (RhinoCommon 8.x, Grasshopper 1.x)
 - .NET Framework 4.8
-- No Ladybug or other plugins required
+- No additional plugins required
 
 ---
 

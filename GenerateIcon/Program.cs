@@ -403,7 +403,7 @@ class Program
         });
     }
 
-    // ── Logo (512 px) — flat silhouette style (Grasshopper logo aesthetic) ────
+    // ── Logo (512 px) — bold flat teal silhouette on navy (Grasshopper aesthetic)
     static Bitmap DrawLogo(int sz)
     {
         return Canvas(sz, (g, s) =>
@@ -411,148 +411,131 @@ class Program
             g.Clear(Color.FromArgb(8, 12, 28));
 
             float mx = s * 0.500f;
-            float my = s * 0.355f;  // body centre — ray sits in upper 2/3
+            float my = s * 0.405f;   // body centre — ray sits in upper 60% of canvas
 
-            // ── Main body: bezier-curve wings for organic manta shape ──────────
+            // ── Teal manta silhouette — single continuous bezier path ─────────
+            // Traced clockwise: left fin tip → left wing → tail → right wing → right fin
+            // tip → V-notch → back to left fin tip.  Cephalic fins are part of the
+            // outline (V-notch carved between them), not separate strokes.
             using (var body = new GraphicsPath())
             {
-                // Right leading edge: head → wingtip, sweeps forward then out
-                body.AddBezier(
-                    mx,             my - s*0.340f,   // head tip
-                    mx + s*0.220f,  my - s*0.310f,   // shoulder pull outward
-                    mx + s*0.460f,  my - s*0.120f,   // near tip
-                    mx + s*0.482f,  my - s*0.028f);  // right wingtip
+                float lfx = mx - s*0.108f, lfy = my - s*0.375f;  // left fin tip
+                float rfx = mx + s*0.108f, rfy = my - s*0.375f;  // right fin tip
+                float vnx = mx,            vny = my - s*0.278f;   // V-notch between fins
+                float lwx = mx - s*0.476f, lwy = my - s*0.012f;  // left wingtip
+                float rwx = mx + s*0.476f, rwy = my - s*0.012f;  // right wingtip
+                float ttx = mx,            tty = my + s*0.400f;   // tail tip
 
-                // Right trailing edge: wingtip → tail base, sweeps back
+                // Left fin tip → left wingtip  (outer leading edge)
                 body.AddBezier(
-                    mx + s*0.482f,  my - s*0.028f,
-                    mx + s*0.420f,  my + s*0.110f,
-                    mx + s*0.280f,  my + s*0.230f,
-                    mx + s*0.118f,  my + s*0.305f);  // right tail base
+                    lfx, lfy,
+                    mx - s*0.195f, my - s*0.345f,
+                    mx - s*0.342f, my - s*0.238f,
+                    lwx, lwy);
 
-                // Right tail → tail tip
+                // Left wingtip → left tail base  (trailing sweep)
                 body.AddBezier(
-                    mx + s*0.118f,  my + s*0.305f,
-                    mx + s*0.055f,  my + s*0.360f,
-                    mx + s*0.018f,  my + s*0.385f,
-                    mx,             my + s*0.400f);  // tail tip
+                    lwx, lwy,
+                    mx - s*0.408f, my + s*0.118f,
+                    mx - s*0.255f, my + s*0.252f,
+                    mx - s*0.095f, my + s*0.322f);
 
-                // Mirror: tail tip → left tail base
+                // Left tail base → tail tip
                 body.AddBezier(
-                    mx,             my + s*0.400f,
-                    mx - s*0.018f,  my + s*0.385f,
-                    mx - s*0.055f,  my + s*0.360f,
-                    mx - s*0.118f,  my + s*0.305f);
+                    mx - s*0.095f, my + s*0.322f,
+                    mx - s*0.035f, my + s*0.378f,
+                    mx - s*0.008f, my + s*0.395f,
+                    ttx, tty);
 
-                // Left trailing edge: tail base → left wingtip
+                // Tail tip → right tail base
                 body.AddBezier(
-                    mx - s*0.118f,  my + s*0.305f,
-                    mx - s*0.280f,  my + s*0.230f,
-                    mx - s*0.420f,  my + s*0.110f,
-                    mx - s*0.482f,  my - s*0.028f);  // left wingtip
+                    ttx, tty,
+                    mx + s*0.008f, my + s*0.395f,
+                    mx + s*0.035f, my + s*0.378f,
+                    mx + s*0.095f, my + s*0.322f);
 
-                // Left leading edge: wingtip → head
+                // Right tail base → right wingtip  (trailing sweep)
                 body.AddBezier(
-                    mx - s*0.482f,  my - s*0.028f,
-                    mx - s*0.460f,  my - s*0.120f,
-                    mx - s*0.220f,  my - s*0.310f,
-                    mx,             my - s*0.340f);  // back to head
+                    mx + s*0.095f, my + s*0.322f,
+                    mx + s*0.255f, my + s*0.252f,
+                    mx + s*0.408f, my + s*0.118f,
+                    rwx, rwy);
+
+                // Right wingtip → right fin tip  (outer leading edge)
+                body.AddBezier(
+                    rwx, rwy,
+                    mx + s*0.342f, my - s*0.238f,
+                    mx + s*0.195f, my - s*0.345f,
+                    rfx, rfy);
+
+                // Right fin tip → V-notch  (inner edge of right cephalic fin)
+                body.AddBezier(
+                    rfx, rfy,
+                    mx + s*0.086f, my - s*0.362f,
+                    mx + s*0.040f, my - s*0.306f,
+                    vnx, vny);
+
+                // V-notch → left fin tip  (inner edge of left cephalic fin)
+                body.AddBezier(
+                    vnx, vny,
+                    mx - s*0.040f, my - s*0.306f,
+                    mx - s*0.086f, my - s*0.362f,
+                    lfx, lfy);
 
                 body.CloseFigure();
 
-                using (var b = new SolidBrush(Color.FromArgb(238, 248, 246)))
+                using (var b = new SolidBrush(Teal))
                     g.FillPath(b, body);
             }
 
-            // ── Cephalic fins — thick bezier strokes (curling horns) ──────────
-            // These are drawn OVER the white body so they appear as dark navy lines
-            // giving the distinct manta "horn" silhouette detail
-            using (var pen = new Pen(Color.FromArgb(8, 12, 28), s * 0.038f)
-                { StartCap = LineCap.Round, EndCap = LineCap.Round })
-            {
-                // Right cephalic fin: starts at head, curls outward then sweeps back
-                using (var fin = new GraphicsPath())
-                {
-                    fin.AddBezier(
-                        mx + s*0.032f, my - s*0.318f,   // root near head
-                        mx + s*0.130f, my - s*0.285f,   // curl outward
-                        mx + s*0.148f, my - s*0.218f,   // then down
-                        mx + s*0.072f, my - s*0.180f);  // tip pointing back
-                    g.DrawPath(pen, fin);
-                }
-                // Left cephalic fin (mirror)
-                using (var fin = new GraphicsPath())
-                {
-                    fin.AddBezier(
-                        mx - s*0.032f, my - s*0.318f,
-                        mx - s*0.130f, my - s*0.285f,
-                        mx - s*0.148f, my - s*0.218f,
-                        mx - s*0.072f, my - s*0.180f);
-                    g.DrawPath(pen, fin);
-                }
-            }
-
-            // ── Body centre stripe — narrow navy ellipse on white ─────────────
-            float bW = s * 0.078f, bH = s * 0.385f;
-            using (var b = new SolidBrush(Color.FromArgb(105, 8, 12, 28)))
-                g.FillEllipse(b, mx - bW/2f, my - bH*0.56f, bW, bH);
-
-            // Teal wash on body centre (brand colour peek-through)
+            // ── Body centre vignette — dim ellipse to suggest depth ───────────
             using (var bpath = new GraphicsPath())
             {
-                float tw = s*0.048f, th = s*0.240f;
-                bpath.AddEllipse(mx - tw, my - th*0.56f, tw*2, th);
+                float bw = s*0.064f, bh = s*0.348f;
+                bpath.AddEllipse(mx - bw*0.5f, my - bh*0.54f, bw, bh);
                 using (var pgb = new PathGradientBrush(bpath))
                 {
-                    pgb.CenterColor    = Color.FromArgb(60, 0, 210, 185);
+                    pgb.CenterColor    = Color.FromArgb(80, 0, 0, 0);
                     pgb.SurroundColors = new[] { Color.Transparent };
                     g.FillPath(pgb, bpath);
                 }
             }
 
-            // Eye — navy dot
-            float ey = my - s*0.238f, er = s*0.010f;
-            using (var b = new SolidBrush(Color.FromArgb(8, 12, 28)))
-                g.FillEllipse(b, mx - er + s*0.012f, ey - er, er*2, er*2);
+            // Eye — small navy dot
+            float er = s * 0.011f;
+            using (var b = new SolidBrush(Color.FromArgb(170, 8, 12, 28)))
+                g.FillEllipse(b, mx + s*0.020f - er, my - s*0.218f - er, er*2, er*2);
 
-            // ── Text ──────────────────────────────────────────────────────────
+            // ── "MANTA" — bold white, centred ────────────────────────────────
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
-            float  titleY  = s * 0.810f;
-            int    titlePx = (int)(s * 0.112f);
+            int   titlePx = (int)(s * 0.116f);
+            float titleY  = s * 0.845f;
             using (var font = new Font("Segoe UI", titlePx, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 SizeF tsz = g.MeasureString("MANTA", font);
-                float tx  = (s - tsz.Width) / 2f;
-                using (var b = new LinearGradientBrush(
-                    new PointF(tx, titleY), new PointF(tx + tsz.Width, titleY),
-                    Color.FromArgb(0, 215, 185), Color.FromArgb(55, 225, 255)))
-                    g.DrawString("MANTA", font, b, tx, titleY);
+                using (var b = new SolidBrush(Wht))
+                    g.DrawString("MANTA", font, b, (s - tsz.Width) / 2f, titleY);
             }
 
-            int subPx = (int)(s * 0.038f);
-            using (var font = new Font("Segoe UI", subPx, FontStyle.Regular, GraphicsUnit.Pixel))
+            // GH badge — top right corner
+            float ghbW = s*0.145f, ghbH = s*0.055f;
+            float ghbX = s - ghbW - s*0.028f, ghbY = s*0.028f;
+            using (var path = RoundRect(new RectangleF(ghbX, ghbY, ghbW, ghbH), ghbH*0.4f))
             {
-                string sub = "Environmental Analysis  ·  Grasshopper Plugin";
-                SizeF  ssz = g.MeasureString(sub, font);
-                using (var b = new SolidBrush(Color.FromArgb(90, 0, 175, 158)))
-                    g.DrawString(sub, font, b, (s - ssz.Width)/2f, s * 0.928f);
+                using (var b = new SolidBrush(Color.FromArgb(70, 0, 50, 45)))
+                    g.FillPath(b, path);
+                using (var p = new Pen(Color.FromArgb(80, 0, 210, 185), s*0.003f))
+                    g.DrawPath(p, path);
             }
-
-            // GH badge — top right
-            float bW2 = s*0.145f, bH2 = s*0.055f;
-            float bX2 = s - bW2 - s*0.030f, bY2 = s*0.030f;
-            using (var path = RoundRect(new RectangleF(bX2, bY2, bW2, bH2), bH2*0.4f))
-            {
-                using (var b = new SolidBrush(Color.FromArgb(70, 0, 50, 45)))   g.FillPath(b, path);
-                using (var p = new Pen(Color.FromArgb(80, 0, 210, 185), s*0.003f)) g.DrawPath(p, path);
-            }
-            int ghPx = (int)(s * 0.040f);
+            int   ghPx  = (int)(s * 0.040f);
             using (var font  = new Font("Segoe UI", ghPx, FontStyle.Bold, GraphicsUnit.Pixel))
             using (var brush = new SolidBrush(Color.FromArgb(190, 0, 210, 185)))
             {
                 SizeF msz = g.MeasureString("GH", font);
-                g.DrawString("GH", font, brush, bX2+(bW2-msz.Width)/2f, bY2+(bH2-msz.Height)/2f);
+                g.DrawString("GH", font, brush,
+                    ghbX + (ghbW - msz.Width) / 2f,
+                    ghbY + (ghbH - msz.Height) / 2f);
             }
         });
     }
