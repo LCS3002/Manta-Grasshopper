@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Rhino.Geometry;
 
-namespace BatGH
+namespace Manta
 {
     // ── Shared math for all Manta Engine components ───────────────────────────
     static class MantaMath

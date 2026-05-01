@@ -4,7 +4,7 @@ using System.Drawing;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
-namespace BatGH
+namespace Manta
 {
     public class BatInteriorComponent : GH_Component
     {
@@ -17,7 +17,7 @@ namespace BatGH
         { }
 
         public override Guid ComponentGuid => new Guid("44556677-8899-4011-BBCC-DDEEFF001123");
-        protected override Bitmap Icon => BatIcons.Interior24;
+        protected override Bitmap Icon => MantaIcons.Interior24;
 
         protected override void RegisterInputParams(GH_InputParamManager p)
         {

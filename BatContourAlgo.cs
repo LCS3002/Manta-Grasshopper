@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Rhino.Geometry;
 
-namespace BatGH
+namespace Manta
 {
     // Marching-triangles isodecibel contour extraction.
     static class ContourAlgo

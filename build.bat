@@ -2,8 +2,8 @@
 cd /d "%~dp0"
 
 echo.
-echo  B A T  G H  --  Acoustic Site Analysis
-echo  ----------------------------------------
+echo  Manta  --  Environmental Analysis for Grasshopper
+echo  --------------------------------------------------
 echo.
 
 echo [1/3] Generating icons...
@@ -17,7 +17,7 @@ if errorlevel 1 ( echo BUILD FAILED & exit /b 1 )
 
 echo.
 echo [3/3] Installing...
-copy /Y "bin\Release\net48\BatGH.dll" "%APPDATA%\Grasshopper\Libraries\BatGH.gha"
+copy /Y "bin\Release\net48\Manta.dll" "%APPDATA%\Grasshopper\Libraries\Manta.gha"
 if errorlevel 1 (
     echo INSTALL FAILED -- is Rhino / Grasshopper running?
     echo Close Rhino, then run build.bat again.
@@ -25,11 +25,11 @@ if errorlevel 1 (
 )
 
 echo.
-echo  Done!  BatGH.gha installed to:
+echo  Done!  Manta.gha installed to:
 echo  %APPDATA%\Grasshopper\Libraries\
 echo.
-echo  Restart Rhino to load the updated plugin.
-echo  Components appear under Analysis ^> Acoustic:
-echo    BT Source  ^|  BT Mesh  ^|  BT Noise
-echo    BT Interior  ^|  BT Contours  ^|  BT Legend
+echo  Restart Rhino.  Components appear under Analysis:
+echo    Acoustic:    BT Source  BT Mesh   BT Noise
+echo                 BT Interior  BT Contours  BT Legend
+echo    Environment: MN Wind   MN Sun    MN Pressure
 echo.

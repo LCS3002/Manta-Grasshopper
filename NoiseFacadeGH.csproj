@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>BatGH</AssemblyName>
-    <RootNamespace>BatGH</RootNamespace>
+    <AssemblyName>Manta</AssemblyName>
+    <RootNamespace>Manta</RootNamespace>
     <OutputType>Library</OutputType>
     <LangVersion>7.3</LangVersion>
     <Optimize>true</Optimize>
@@ -19,8 +19,8 @@
     <None Remove="GenerateIcon\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Bat_24.png" />
-    <EmbeddedResource Include="Bat_48.png" />
+    <EmbeddedResource Include="Manta_24.png" />
+    <EmbeddedResource Include="Manta_48.png" />
     <EmbeddedResource Include="BatSource_24.png" />
     <EmbeddedResource Include="BatMesh_24.png" />
     <EmbeddedResource Include="BatNoise_24.png" />

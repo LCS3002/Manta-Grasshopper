@@ -7,7 +7,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-namespace BatGH
+namespace Manta
 {
     public class BatContoursComponent : GH_Component
     {
@@ -19,7 +19,7 @@ namespace BatGH
         { }
 
         public override Guid ComponentGuid => new Guid("55667788-99AA-4122-CCDD-EEFF00112234");
-        protected override Bitmap Icon => BatIcons.Contours24;
+        protected override Bitmap Icon => MantaIcons.Contours24;
 
         protected override void RegisterInputParams(GH_InputParamManager p)
         {

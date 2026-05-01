@@ -5,7 +5,7 @@ using System.Linq;
 using Rhino.Geometry;
 using Rhino.Geometry.Intersect;
 
-namespace BatGH
+namespace Manta
 {
     static class Acoustics
     {
