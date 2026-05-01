@@ -39,7 +39,7 @@ namespace Manta
 
         protected override void RegisterInputParams(GH_InputParamManager p)
         {
-            p.AddMeshParameter   ("Mesh",       "M",  "Analysis mesh (e.g. from BT Mesh)",           GH_ParamAccess.item);
+            p.AddMeshParameter   ("Mesh",       "M",  "Analysis mesh (e.g. from MN Mesh)",           GH_ParamAccess.item);
             p.AddVectorParameter ("Wind Dir",   "V",  "Wind direction vector (will be normalised)",   GH_ParamAccess.item, new Vector3d(1, 0, 0));
             p.AddNumberParameter ("Speed",      "Sp", "Wind speed — controls animation rate",         GH_ParamAccess.item, 5.0);
             p.AddNumberParameter ("Turbulence", "Tu", "Curl-noise turbulence intensity (0 = laminar)", GH_ParamAccess.item, 1.5);

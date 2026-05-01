@@ -403,190 +403,250 @@ class Program
         });
     }
 
-    // ── Logo (512 px) — for README ────────────────────────────────────────────
+    // ── Logo (512 px) — manta ray hero ───────────────────────────────────────
     static Bitmap DrawLogo(int sz)
     {
         return Canvas(sz, (g, s) =>
         {
-            // Background gradient
-            using (var brush = new LinearGradientBrush(
-                new PointF(0, 0), new PointF(s*0.3f, s),
-                Color.FromArgb(6, 9, 22), Color.FromArgb(14, 24, 52)))
-                g.FillRectangle(brush, 0, 0, s, s);
+            // ── Background: near-black deep ocean, subtle radial teal glow ─────
+            g.Clear(Color.FromArgb(4, 6, 16));
 
-            // Noise texture
-            var rng = new Random(42);
-            for (int i = 0; i < 300; i++)
-            {
-                float x = (float)(rng.NextDouble() * s);
-                float y = (float)(rng.NextDouble() * s);
-                int   a = rng.Next(3, 14);
-                g.FillRectangle(new SolidBrush(Color.FromArgb(a, 255, 255, 255)), x, y, 1, 1);
-            }
-
-            // Facade panel grid
-            int   cols = 7, rows = 5;
-            float fL = s*0.04f, fR = s*0.96f, fT = s*0.05f, fB = s*0.62f;
-            float fW = fR - fL, fH = fB - fT;
-            float gapX = fW*0.009f, gapY = fH*0.018f;
-            float pw   = (fW - gapX*(cols-1))/cols;
-            float ph   = (fH - gapY*(rows-1))/rows;
-            float shear = fH*0.06f;
-
-            for (int row = 0; row < rows; row++)
-            for (int col = 0; col < cols; col++)
-            {
-                // Blend acoustic and teal palette across the facade
-                double tAc = (double)col / (cols - 1);
-                Color  fc  = col < cols/2
-                    ? AcousticGrad(tAc * 0.5)
-                    : Color.FromArgb(
-                        Cl((int)(0   + tAc * 0)),
-                        Cl((int)(180 + tAc * 30)),
-                        Cl((int)(160 + tAc * 20)));
-                double br = 0.55 + 0.45*(1.0 - (double)row/rows);
-                fc = Color.FromArgb(Cl((int)(fc.R*br)), Cl((int)(fc.G*br)), Cl((int)(fc.B*br)));
-                float x0 = fL + col*(pw+gapX);
-                float y0 = fT + row*(ph+gapY) + (float)col/(cols-1)*shear;
-                using (var b = new SolidBrush(fc)) g.FillRectangle(b, x0, y0, pw, ph);
-                using (var b = new LinearGradientBrush(
-                    new PointF(x0, y0), new PointF(x0, y0+ph*0.3f),
-                    Color.FromArgb(55,255,255,255), Color.Transparent))
-                    g.FillRectangle(b, x0, y0, pw, ph*0.30f);
-            }
-
-            // Grid lines
-            using (var pen = new Pen(Color.FromArgb(22, 210, 230, 255), s*0.002f))
-            {
-                for (int col = 0; col <= cols; col++)
-                {
-                    float x  = fL + col*(pw+gapX);
-                    float sy = (float)col/cols*shear;
-                    g.DrawLine(pen, x, fT+sy, x, fB+sy);
-                }
-                for (int row = 0; row <= rows; row++)
-                {
-                    float y = fT + row*(ph+gapY);
-                    g.DrawLine(pen, fL, y, fR, y+shear);
-                }
-            }
-
-            // Source — now teal
-            float srcX = s*0.13f, srcY = s*0.36f;
-            using (var pen = new Pen(Color.FromArgb(14, 0, 210, 180), s*0.002f))
-            for (int i = 0; i <= 6; i++)
-            {
-                float targetY = fT + (fB - fT)*i/6f;
-                g.DrawLine(pen, srcX, srcY, fL, targetY);
-            }
-            for (int i = 1; i <= 7; i++)
-            {
-                float rad   = s*(0.018f + i*0.028f);
-                int   alpha = Math.Max(190 - i*23, 10);
-                float thick = s*0.0055f*(8-i)/7f;
-                using (var pen = new Pen(Color.FromArgb(alpha, 0, 210, 180), Math.Max(thick, 0.5f)))
-                {
-                    pen.StartCap = LineCap.Round; pen.EndCap = LineCap.Round;
-                    g.DrawArc(pen, srcX-rad, srcY-rad, rad*2, rad*2, 175, 190);
-                }
-            }
-            float glowR = s*0.028f;
+            // Wide ambient glow behind the body
             using (var path = new GraphicsPath())
             {
-                path.AddEllipse(srcX-glowR*2.5f, srcY-glowR*2.5f, glowR*5, glowR*5);
+                float gr = s * 0.60f;
+                float gcx = s * 0.50f, gcy = s * 0.42f;
+                path.AddEllipse(gcx - gr, gcy - gr * 0.75f, gr * 2, gr * 1.5f);
                 using (var pgb = new PathGradientBrush(path))
                 {
-                    pgb.CenterColor    = Color.FromArgb(80, 0, 210, 180);
-                    pgb.SurroundColors = new[]{ Color.Transparent };
+                    pgb.CenterColor    = Color.FromArgb(28, 0, 180, 160);
+                    pgb.SurroundColors = new[] { Color.Transparent };
                     g.FillPath(pgb, path);
                 }
             }
-            using (var b = new SolidBrush(Color.FromArgb(255, 60, 220, 255)))
-                g.FillEllipse(b, srcX-glowR, srcY-glowR, glowR*2, glowR*2);
-            float coreR = glowR*0.52f;
-            g.FillEllipse(Brushes.White, srcX-coreR, srcY-coreR, coreR*2, coreR*2);
 
-            // Vignette
+            // Subtle depth rings (sonar feel)
+            float rcx = s * 0.50f, rcy = s * 0.42f;
+            for (int i = 1; i <= 6; i++)
+            {
+                float r     = s * i * 0.085f;
+                int   alpha = Math.Max(12 - i * 2, 2);
+                using (var pen = new Pen(Color.FromArgb(alpha, 0, 200, 180), 1f))
+                    g.DrawEllipse(pen, rcx - r, rcy - r, r * 2, r * 2);
+            }
+
+            // Scattered particles — bioluminescence
+            var rng = new Random(31);
+            for (int i = 0; i < 260; i++)
+            {
+                float px = (float)(rng.NextDouble() * s);
+                float py = (float)(rng.NextDouble() * s * 0.88f);
+                int   pa = rng.Next(4, 22);
+                float pr = (float)(rng.NextDouble() * 1.4f + 0.3f);
+                using (var b = new SolidBrush(Color.FromArgb(pa, 0, 220, 200)))
+                    g.FillEllipse(b, px - pr, py - pr, pr * 2, pr * 2);
+            }
+
+            // ── Manta ray — hero, viewed from above ───────────────────────────
+            float mx = s * 0.50f, my = s * 0.415f;
+
+            // Wing polygon
+            PointF[] wings = {
+                new PointF(mx,            my - s*0.315f),  // head tip
+                new PointF(mx + s*0.468f, my - s*0.068f),  // right wingtip
+                new PointF(mx + s*0.375f, my + s*0.112f),  // right trailing
+                new PointF(mx + s*0.120f, my + s*0.260f),  // right tail base
+                new PointF(mx,            my + s*0.355f),  // tail tip
+                new PointF(mx - s*0.120f, my + s*0.260f),  // left tail base
+                new PointF(mx - s*0.375f, my + s*0.112f),  // left trailing
+                new PointF(mx - s*0.468f, my - s*0.068f),  // left wingtip
+            };
+
+            // Cephalic fins
+            PointF[] leftCeph = {
+                new PointF(mx - s*0.040f, my - s*0.292f),
+                new PointF(mx - s*0.090f, my - s*0.192f),
+                new PointF(mx - s*0.008f, my - s*0.170f),
+            };
+            PointF[] rightCeph = {
+                new PointF(mx + s*0.040f, my - s*0.292f),
+                new PointF(mx + s*0.090f, my - s*0.192f),
+                new PointF(mx + s*0.008f, my - s*0.170f),
+            };
+
+            // Motion wake — swept trails from wingtips
+            PointF[] tips = { wings[1], wings[7] };
+            float[]  dirs = { 1f, -1f };
+            for (int t = 0; t < 2; t++)
+            {
+                float tipX = tips[t].X, tipY = tips[t].Y;
+                float dir  = dirs[t];
+                for (int li = 0; li < 6; li++)
+                {
+                    float vOff = li * s * 0.008f;
+                    var pts = new List<PointF>();
+                    for (int step = 0; step <= 24; step++)
+                    {
+                        float frac = (float)step / 24f;
+                        float wx = tipX + dir * frac * s * 0.32f;
+                        float wy = tipY + frac * s * 0.09f
+                                 - (float)Math.Sin(frac * Math.PI) * s * 0.045f
+                                 + vOff;
+                        pts.Add(new PointF(wx, wy));
+                    }
+                    int wAlpha = Math.Max(28 - li * 4, 4);
+                    using (var pen = new Pen(Color.FromArgb(wAlpha, 0, 195, 175), 1.8f)
+                        { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                        g.DrawLines(pen, pts.ToArray());
+                }
+            }
+
+            // Body back-glow (bioluminescent underbelly)
             using (var path = new GraphicsPath())
             {
-                path.AddEllipse(-s*0.15f, -s*0.15f, s*1.30f, s*1.30f);
+                float bgW = s * 0.20f, bgH = s * 0.50f;
+                path.AddEllipse(mx - bgW, my - bgH * 0.55f, bgW * 2, bgH);
+                using (var pgb = new PathGradientBrush(path))
+                {
+                    pgb.CenterColor    = Color.FromArgb(60, 0, 235, 210);
+                    pgb.SurroundColors = new[] { Color.Transparent };
+                    g.FillPath(pgb, path);
+                }
+            }
+
+            // Wing fill — dark teal base
+            using (var b = new SolidBrush(Color.FromArgb(0, 145, 128)))
+            {
+                g.FillPolygon(b, wings);
+                g.FillPolygon(b, leftCeph);
+                g.FillPolygon(b, rightCeph);
+            }
+
+            // Wing-tip fade: darker overlay toward tips for depth shading
+            foreach (var tip in new[] { wings[1], wings[7] })
+            {
+                using (var path = new GraphicsPath())
+                {
+                    float tr = s * 0.14f;
+                    path.AddEllipse(tip.X - tr, tip.Y - tr, tr * 2, tr * 2);
+                    using (var pgb = new PathGradientBrush(path))
+                    {
+                        pgb.CenterColor    = Color.FromArgb(60, 0, 0, 0);
+                        pgb.SurroundColors = new[] { Color.Transparent };
+                        g.FillPath(pgb, path);
+                    }
+                }
+            }
+
+            // Bright edge highlight — rim of the wings
+            using (var pen = new Pen(Color.FromArgb(160, 0, 215, 195), 2.2f)
+                { LineJoin = LineJoin.Round })
+            {
+                g.DrawPolygon(pen, wings);
+                g.DrawPolygon(pen, leftCeph);
+                g.DrawPolygon(pen, rightCeph);
+            }
+
+            // Body oval — darker center stripe
+            float bW = s * 0.115f, bH = s * 0.360f;
+            using (var b = new SolidBrush(Color.FromArgb(0, 95, 85)))
+                g.FillEllipse(b, mx - bW / 2, my - bH * 0.57f, bW, bH);
+
+            // Body centre-line glow
+            using (var path = new GraphicsPath())
+            {
+                float clW = s * 0.075f, clH = s * 0.420f;
+                path.AddEllipse(mx - clW, my - clH * 0.55f, clW * 2, clH);
+                using (var pgb = new PathGradientBrush(path))
+                {
+                    pgb.CenterColor    = Color.FromArgb(70, 0, 235, 215);
+                    pgb.SurroundColors = new[] { Color.Transparent };
+                    g.FillPath(pgb, path);
+                }
+            }
+
+            // Eye
+            float ex = mx + s * 0.016f, ey = my - s * 0.215f, er = s * 0.013f;
+            using (var b = new SolidBrush(Color.FromArgb(210, 0, 245, 225)))
+                g.FillEllipse(b, ex - er, ey - er, er * 2, er * 2);
+            using (var b = new SolidBrush(Color.FromArgb(160, 255, 255, 255)))
+                g.FillEllipse(b, ex - er*0.42f, ey - er*0.42f, er*0.84f, er*0.84f);
+
+            // ── Vignette ───────────────────────────────────────────────────────
+            using (var path = new GraphicsPath())
+            {
+                path.AddEllipse(-s*0.12f, -s*0.12f, s*1.24f, s*1.24f);
                 using (var pgb = new PathGradientBrush(path))
                 {
                     pgb.CenterColor    = Color.Transparent;
-                    pgb.SurroundColors = new[]{ Color.FromArgb(140, 4, 7, 18) };
+                    pgb.SurroundColors = new[] { Color.FromArgb(170, 3, 5, 14) };
                     g.FillRectangle(pgb, 0, 0, s, s);
                 }
             }
 
-            // Text overlay background
-            float textTop = s*0.64f;
-            using (var b = new LinearGradientBrush(
-                new PointF(0, textTop), new PointF(0, s),
-                Color.FromArgb(0, 4, 7, 18), Color.FromArgb(235, 4, 7, 18)))
-                g.FillRectangle(b, 0, textTop, s, s-textTop);
-
+            // ── Text ───────────────────────────────────────────────────────────
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
-            // Title "MANTA" in teal gradient
-            float titleY  = s*0.68f;
-            int   titlePx = (int)(s*0.100f);
+            // Fade panel behind text so it reads cleanly over the ray
+            float textTop = s * 0.756f;
+            using (var b = new LinearGradientBrush(
+                new PointF(0, textTop), new PointF(0, s),
+                Color.FromArgb(0, 3, 5, 14), Color.FromArgb(215, 3, 5, 14)))
+                g.FillRectangle(b, 0, textTop, s, s - textTop);
+
+            // "MANTA" — large, centered, teal→cyan gradient
+            float  titleY  = s * 0.790f;
+            int    titlePx = (int)(s * 0.112f);
             using (var font = new Font("Segoe UI", titlePx, FontStyle.Bold, GraphicsUnit.Pixel))
             {
-                using (var b = new SolidBrush(Color.FromArgb(70, 0, 0, 0)))
-                    g.DrawString("MANTA", font, b, s*0.044f+2, titleY+3);
+                SizeF sz2 = g.MeasureString("MANTA", font);
+                float tx  = (s - sz2.Width) / 2f;
+
+                // drop shadow
+                using (var b = new SolidBrush(Color.FromArgb(80, 0, 0, 0)))
+                    g.DrawString("MANTA", font, b, tx + 3, titleY + 4);
+
+                // soft glow pass
+                using (var b = new SolidBrush(Color.FromArgb(35, 0, 220, 200)))
+                {
+                    g.DrawString("MANTA", font, b, tx - 2, titleY - 2);
+                    g.DrawString("MANTA", font, b, tx + 2, titleY + 2);
+                }
+
+                // main gradient
                 using (var b = new LinearGradientBrush(
-                    new PointF(s*0.044f, titleY), new PointF(s*0.6f, titleY),
-                    Color.FromArgb(0, 210, 180), Color.FromArgb(60, 220, 255)))
-                    g.DrawString("MANTA", font, b, s*0.044f, titleY);
+                    new PointF(tx, titleY), new PointF(tx + sz2.Width, titleY),
+                    Color.FromArgb(0, 215, 185), Color.FromArgb(55, 225, 255)))
+                    g.DrawString("MANTA", font, b, tx, titleY);
             }
 
-            // Subtitle
-            int subPx = (int)(s*0.047f);
-            using (var font  = new Font("Segoe UI", subPx, FontStyle.Regular, GraphicsUnit.Pixel))
-            using (var brush = new SolidBrush(Color.FromArgb(150, 160, 215, 200)))
-                g.DrawString("Environmental Analysis  ·  Grasshopper Plugin", font, brush, s*0.044f, s*0.808f);
-
-            // Colour bar
-            float barL = s*0.044f, barR = s*0.956f, barT = s*0.900f, barBt = s*0.940f;
-            int   strips = 200;
-            for (int i = 0; i < strips; i++)
+            // Subtitle — centered
+            int subPx = (int)(s * 0.040f);
+            using (var font = new Font("Segoe UI", subPx, FontStyle.Regular, GraphicsUnit.Pixel))
             {
-                double t  = (double)i/(strips-1);
-                float  x0 = barL + (float)(t*(barR-barL));
-                float  bw2 = (barR-barL)/strips + 0.5f;
-                // Left half: acoustic gradient, right half: teal gradient
-                Color barC = t < 0.5
-                    ? AcousticGrad(t * 2)
-                    : Color.FromArgb(
-                        0,
-                        Cl((int)(210 - (t-0.5)*2*30)),
-                        Cl((int)(180 + (t-0.5)*2*75)));
-                using (var b = new SolidBrush(barC))
-                    g.FillRectangle(b, x0, barT, bw2, barBt-barT);
-            }
-            int lblPx = (int)(s*0.038f);
-            using (var font  = new Font("Segoe UI", lblPx, FontStyle.Regular, GraphicsUnit.Pixel))
-            using (var brush = new SolidBrush(Color.FromArgb(130, 190, 215, 200)))
-            {
-                g.DrawString("acoustic", font, brush, barL, barBt+s*0.006f);
-                var msz = g.MeasureString("wind · sun", font);
-                g.DrawString("wind · sun", font, brush, barR-msz.Width, barBt+s*0.006f);
+                string sub  = "Environmental Analysis  ·  Grasshopper Plugin";
+                SizeF  ssz  = g.MeasureString(sub, font);
+                float  stx  = (s - ssz.Width) / 2f;
+                using (var b = new SolidBrush(Color.FromArgb(130, 0, 175, 158)))
+                    g.DrawString(sub, font, b, stx, s * 0.912f);
             }
 
-            // "GH" pill badge in teal
-            float bW = s*0.155f, bH = s*0.062f;
-            float bX = s-bW-s*0.038f, bY = s*0.038f;
-            using (var path = RoundRect(new RectangleF(bX, bY, bW, bH), bH*0.4f))
+            // GH pill badge — top right
+            float bW2 = s*0.148f, bH2 = s*0.058f;
+            float bX2 = s - bW2 - s*0.034f, bY2 = s*0.034f;
+            using (var path = RoundRect(new RectangleF(bX2, bY2, bW2, bH2), bH2*0.4f))
             {
-                using (var b = new SolidBrush(Color.FromArgb(90, 0, 60, 55)))  g.FillPath(b, path);
-                using (var p = new Pen(Color.FromArgb(90, 0, 210, 180), s*0.003f)) g.DrawPath(p, path);
+                using (var b = new SolidBrush(Color.FromArgb(80, 0, 55, 50)))
+                    g.FillPath(b, path);
+                using (var p = new Pen(Color.FromArgb(85, 0, 210, 185), s*0.003f))
+                    g.DrawPath(p, path);
             }
-            int ghPx = (int)(s*0.044f);
+            int ghPx = (int)(s * 0.042f);
             using (var font  = new Font("Segoe UI", ghPx, FontStyle.Bold, GraphicsUnit.Pixel))
-            using (var brush = new SolidBrush(Color.FromArgb(210, 0, 210, 180)))
+            using (var brush = new SolidBrush(Color.FromArgb(200, 0, 210, 185)))
             {
-                var msz = g.MeasureString("GH", font);
-                g.DrawString("GH", font, brush, bX+(bW-msz.Width)/2, bY+(bH-msz.Height)/2);
+                SizeF msz = g.MeasureString("GH", font);
+                g.DrawString("GH", font, brush, bX2 + (bW2 - msz.Width) / 2f, bY2 + (bH2 - msz.Height) / 2f);
             }
         });
     }

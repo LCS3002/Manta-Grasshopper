@@ -9,7 +9,7 @@ namespace Manta
     public class BatInteriorComponent : GH_Component
     {
         public BatInteriorComponent()
-            : base("BT Interior", "BT Int",
+            : base("MN Interior", "MN Int",
                    "Interior noise exposure score — each facade face acts as a secondary source.\n" +
                    "Score = 10·log10(Σ [10^(dBi/10) × area_i / dist_i²])\n" +
                    "Wire 'Interior dB' → Galapagos fitness and set to Minimise.",
@@ -21,8 +21,8 @@ namespace Manta
 
         protected override void RegisterInputParams(GH_InputParamManager p)
         {
-            p.AddMeshParameter  ("Mesh",        "M",  "Analysis mesh from BT Noise",          GH_ParamAccess.item);
-            p.AddNumberParameter("Face dB",     "dB", "Per-face dB values from BT Noise",     GH_ParamAccess.list);
+            p.AddMeshParameter  ("Mesh",        "M",  "Analysis mesh from MN Noise",          GH_ParamAccess.item);
+            p.AddNumberParameter("Face dB",     "dB", "Per-face dB values from MN Noise",     GH_ParamAccess.list);
             p.AddPointParameter ("Interior Pt", "IP", "Point inside the building",             GH_ParamAccess.item);
         }
 
@@ -48,7 +48,7 @@ namespace Manta
             if (!DA.GetData    (0, ref mesh)     || mesh == null)
             { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No mesh"); return; }
             if (!DA.GetDataList(1, faceDbList)   || faceDbList.Count == 0)
-            { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No Face dB — connect BT Noise"); return; }
+            { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No Face dB — connect MN Noise"); return; }
             if (!DA.GetData    (2, ref ip)        || ip == Point3d.Unset)
             { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No interior point"); return; }
 

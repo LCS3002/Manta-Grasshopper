@@ -22,7 +22,7 @@ namespace Manta
             : base("MN Pressure", "MN Pre",
                    "Animated acoustic pressure wavefronts radiating from noise sources.\n" +
                    "Visualises how sound energy propagates outward in time.\n" +
-                   "Pairs with BT Noise — use the same sources for integrated analysis.",
+                   "Pairs with MN Noise — use the same sources for integrated analysis.",
                    "Analysis", "Environment")
         { }
 
@@ -31,8 +31,8 @@ namespace Manta
 
         protected override void RegisterInputParams(GH_InputParamManager p)
         {
-            p.AddPointParameter  ("Sources",    "S",  "Noise source points (from BT Source)",       GH_ParamAccess.list);
-            p.AddNumberParameter ("Levels",     "dB", "dB levels per source (from BT Source)",       GH_ParamAccess.list);
+            p.AddPointParameter  ("Sources",    "S",  "Noise source points (from MN Source)",       GH_ParamAccess.list);
+            p.AddNumberParameter ("Levels",     "dB", "dB levels per source (from MN Source)",       GH_ParamAccess.list);
             p.AddNumberParameter ("Wave Speed", "c",  "Speed of sound in m/s (default 343)",         GH_ParamAccess.item, 343.0);
             p.AddNumberParameter ("Scale",      "Sc", "Visual scale — shrinks radius for display",   GH_ParamAccess.item, 0.05);
             p.AddIntegerParameter("Rings",      "R",  "Wavefront rings per source",                  GH_ParamAccess.item, 5);
@@ -53,7 +53,7 @@ namespace Manta
             int    rings   = 5;
 
             if (!DA.GetDataList(0, srcList) || srcList.Count == 0)
-            { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No sources — connect BT Source"); return; }
+            { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No sources — connect MN Source"); return; }
 
             DA.GetDataList(1, lvlList);
             DA.GetData(2, ref speed); DA.GetData(3, ref sc); DA.GetData(4, ref rings);

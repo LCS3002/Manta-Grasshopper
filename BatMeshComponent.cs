@@ -8,8 +8,8 @@ namespace Manta
     public class BatMeshComponent : GH_Component
     {
         public BatMeshComponent()
-            : base("BT Mesh", "BT Msh",
-                   "Convert any geometry to a Bat GH analysis mesh.\n" +
+            : base("MN Mesh", "MN Msh",
+                   "Convert any geometry to a Manta analysis mesh.\n" +
                    "Supports Mesh, Surface, Brep, SubD and Extrusion.\n" +
                    "Outputs normals-ready mesh, face count and total area.",
                    "Analysis", "Acoustic")
@@ -27,7 +27,7 @@ namespace Manta
 
         protected override void RegisterOutputParams(GH_OutputParamManager p)
         {
-            p.AddMeshParameter  ("Mesh",      "M",  "Analysis mesh → BT Noise / BT Contours",         GH_ParamAccess.item);
+            p.AddMeshParameter  ("Mesh",      "M",  "Analysis mesh → MN Noise / MN Contours",         GH_ParamAccess.item);
             p.AddIntegerParameter("Face Count","FC", "Number of mesh faces",                            GH_ParamAccess.item);
             p.AddNumberParameter ("Area",     "A",  "Total surface area (model units²)",               GH_ParamAccess.item);
         }

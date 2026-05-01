@@ -25,7 +25,7 @@ namespace Manta
             : base("MN Sun", "MN Sun",
                    "Animated solar path with real-time shadow sweep.\n" +
                    "Uses NOAA SPA algorithm — accurate to ±0.01° for 2000-2050.\n" +
-                   "Connect to BT Mesh for direct integration with noise analysis.",
+                   "Connect to MN Mesh for direct integration with noise analysis.",
                    "Analysis", "Environment")
         { }
 

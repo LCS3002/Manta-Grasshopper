@@ -15,9 +15,9 @@ namespace Manta
         private double        _textSize   = 0.5;
 
         public BatLegendComponent()
-            : base("BT Legend", "BT Leg",
+            : base("MN Legend", "MN Leg",
                    "Draw a dB colour-scale legend in the Rhino viewport.\n" +
-                   "Position with Origin; connect Min/Max from BT Noise.",
+                   "Position with Origin; connect Min/Max from MN Noise.",
                    "Analysis", "Acoustic")
         { }
 
@@ -27,8 +27,8 @@ namespace Manta
         protected override void RegisterInputParams(GH_InputParamManager p)
         {
             p.AddPointParameter ("Origin", "O",   "Base-left corner of the legend in world space", GH_ParamAccess.item, new Point3d(0,0,0));
-            p.AddNumberParameter("Min dB", "Min", "Scale minimum from BT Noise",                   GH_ParamAccess.item, 40.0);
-            p.AddNumberParameter("Max dB", "Max", "Scale maximum from BT Noise",                   GH_ParamAccess.item, 80.0);
+            p.AddNumberParameter("Min dB", "Min", "Scale minimum from MN Noise",                   GH_ParamAccess.item, 40.0);
+            p.AddNumberParameter("Max dB", "Max", "Scale maximum from MN Noise",                   GH_ParamAccess.item, 80.0);
             p.AddNumberParameter("Height", "H",   "Bar height in model units (default 5)",         GH_ParamAccess.item, 5.0);
             p.AddNumberParameter("Width",  "W",   "Bar width in model units (default 1)",          GH_ParamAccess.item, 1.0);
             p.AddIntegerParameter("Ticks", "T",   "Number of tick labels (default 5)",             GH_ParamAccess.item, 5);

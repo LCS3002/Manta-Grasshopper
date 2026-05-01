@@ -9,7 +9,7 @@ namespace Manta
     public class BatSourceComponent : GH_Component
     {
         public BatSourceComponent()
-            : base("BT Source", "BT Src",
+            : base("MN Source", "MN Src",
                    "Define acoustic noise sources — point sources and/or line sources (rail track, road).\n" +
                    "Line sources are subdivided into N equal-power sub-points: L_sub = L_total − 10·log10(N).",
                    "Analysis", "Acoustic")
@@ -34,8 +34,8 @@ namespace Manta
 
         protected override void RegisterOutputParams(GH_OutputParamManager p)
         {
-            p.AddPointParameter ("Sources","S",  "All source positions (flat list) → BT Noise",   GH_ParamAccess.list);
-            p.AddNumberParameter("Levels", "dB", "Matched dB levels → BT Noise",                  GH_ParamAccess.list);
+            p.AddPointParameter ("Sources","S",  "All source positions (flat list) → MN Noise",   GH_ParamAccess.list);
+            p.AddNumberParameter("Levels", "dB", "Matched dB levels → MN Noise",                  GH_ParamAccess.list);
             p.AddIntegerParameter("Count", "N",  "Total number of source sub-points",              GH_ParamAccess.item);
         }
 

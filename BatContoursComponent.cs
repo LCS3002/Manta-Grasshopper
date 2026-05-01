@@ -12,7 +12,7 @@ namespace Manta
     public class BatContoursComponent : GH_Component
     {
         public BatContoursComponent()
-            : base("BT Contours", "BT Con",
+            : base("MN Contours", "MN Con",
                    "Extract isodecibel contour polylines — one branch per level in the output tree.\n" +
                    "Use for acoustic maps, regulatory overlays and documentation.",
                    "Analysis", "Acoustic")
@@ -23,8 +23,8 @@ namespace Manta
 
         protected override void RegisterInputParams(GH_InputParamManager p)
         {
-            p.AddMeshParameter  ("Mesh",   "M",  "Analysis mesh from BT Noise",                       GH_ParamAccess.item);
-            p.AddNumberParameter("Face dB","dB", "Per-face dB values from BT Noise",                  GH_ParamAccess.list);
+            p.AddMeshParameter  ("Mesh",   "M",  "Analysis mesh from MN Noise",                       GH_ParamAccess.item);
+            p.AddNumberParameter("Face dB","dB", "Per-face dB values from MN Noise",                  GH_ParamAccess.list);
             p.AddNumberParameter("Levels", "L",  "dB levels to contour — e.g. {50,55,60,65,70,75}",  GH_ParamAccess.list);
         }
 
@@ -50,7 +50,7 @@ namespace Manta
             if (!DA.GetData    (0, ref mesh)    || mesh == null)
             { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No mesh"); return; }
             if (!DA.GetDataList(1, faceDbL)     || faceDbL.Count == 0)
-            { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No Face dB — connect BT Noise"); return; }
+            { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No Face dB — connect MN Noise"); return; }
             if (!DA.GetDataList(2, targetLvl)   || targetLvl.Count == 0)
             { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No contour levels — e.g. {55,60,65,70}"); return; }
 
