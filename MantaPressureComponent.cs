@@ -16,6 +16,7 @@ namespace Manta
         volatile Point3d[] _sources;
         volatile double[]  _levels;
         double    _waveSpeed;
+        int       _rings;
         BoundingBox _bbox;
 
         public MantaPressureComponent()
@@ -63,7 +64,7 @@ namespace Manta
             _sources   = srcList.ToArray();
             _levels    = lvlList.ToArray();
             _waveSpeed = Math.Max(1, speed) * Math.Max(0.001, sc);
-            rings      = Math.Max(1, Math.Min(20, rings));
+            _rings     = Math.Max(1, Math.Min(20, rings));
 
             // Compute bbox from sources
             var bb = new BoundingBox(_sources);
@@ -104,9 +105,9 @@ namespace Manta
             var lvls   = _levels;
             if (srcs == null || srcs.Length == 0) return;
 
-            double t     = (DateTime.Now - _start).TotalSeconds;
-            double cVis  = _waveSpeed;
-            int    nRings = 5;
+            double t      = (DateTime.Now - _start).TotalSeconds;
+            double cVis   = _waveSpeed;
+            int    nRings = _rings;
 
             for (int si = 0; si < srcs.Length; si++)
             {

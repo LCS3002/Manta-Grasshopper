@@ -21,9 +21,9 @@ namespace Manta
             double g(int xi, int yi, int zi)
             {
                 int h = (xi * 1619 + yi * 31337 + zi * 6271 + 1013904223) & 0x7FFFFFFF;
-                return (h & 1) == 0
-                    ? Lerp(-1, 1, (double)(h >> 1 & 0x7FFF) / 0x7FFF)
-                    : Lerp(-1, 1, (double)(h >> 1 & 0x7FFF) / 0x7FFF);
+                // Use upper bits for magnitude, sign from lowest bit
+                double mag = (double)(h >> 1 & 0x7FFF) / 0x7FFF;
+                return (h & 1) == 0 ? mag : -mag;
             }
 
             return Lerp(
@@ -34,16 +34,26 @@ namespace Manta
                 w);
         }
 
-        // Curl of a noise potential field — gives divergence-free velocity
-        // dF/dy(Nz) − dF/dz(Ny), etc.  (finite-difference approximation)
+        // Curl of a noise potential field — gives divergence-free velocity.
+        // Three independent noise fields Nx/Ny/Nz are offset by large primes so
+        // their partial derivatives are uncorrelated.
+        // curl(N) = (dNz/dy − dNy/dz,  dNx/dz − dNz/dx,  dNy/dx − dNx/dy)
+        const double NoiseOffsetY = 31337.7;
+        const double NoiseOffsetZ = 65537.3;
+
         public static Vector3d CurlNoise(double x, double y, double z, double eps = 0.01)
         {
-            double dNz_dy = (Noise3(x, y+eps, z) - Noise3(x, y-eps, z)) / (2*eps);
-            double dNy_dz = (Noise3(x, y, z+eps) - Noise3(x, y, z-eps)) / (2*eps);
-            double dNx_dz = (Noise3(x, y, z+eps) - Noise3(x, y, z-eps)) / (2*eps);
-            double dNz_dx = (Noise3(x+eps, y, z) - Noise3(x-eps, y, z)) / (2*eps);
-            double dNy_dx = (Noise3(x+eps, y, z) - Noise3(x-eps, y, z)) / (2*eps);
+            // Field Nx — no offset
             double dNx_dy = (Noise3(x, y+eps, z) - Noise3(x, y-eps, z)) / (2*eps);
+            double dNx_dz = (Noise3(x, y, z+eps) - Noise3(x, y, z-eps)) / (2*eps);
+
+            // Field Ny — offset in Y
+            double dNy_dx = (Noise3(x+eps, y+NoiseOffsetY, z) - Noise3(x-eps, y+NoiseOffsetY, z)) / (2*eps);
+            double dNy_dz = (Noise3(x, y+NoiseOffsetY, z+eps) - Noise3(x, y+NoiseOffsetY, z-eps)) / (2*eps);
+
+            // Field Nz — offset in Z
+            double dNz_dx = (Noise3(x+eps, y, z+NoiseOffsetZ) - Noise3(x-eps, y, z+NoiseOffsetZ)) / (2*eps);
+            double dNz_dy = (Noise3(x, y+eps, z+NoiseOffsetZ) - Noise3(x, y-eps, z+NoiseOffsetZ)) / (2*eps);
 
             return new Vector3d(dNz_dy - dNy_dz, dNx_dz - dNz_dx, dNy_dx - dNx_dy);
         }
