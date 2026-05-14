@@ -518,25 +518,6 @@ class Program
                     g.DrawString("MANTA", font, b, (s - tsz.Width) / 2f, titleY);
             }
 
-            // GH badge — top right corner
-            float ghbW = s*0.145f, ghbH = s*0.055f;
-            float ghbX = s - ghbW - s*0.028f, ghbY = s*0.028f;
-            using (var path = RoundRect(new RectangleF(ghbX, ghbY, ghbW, ghbH), ghbH*0.4f))
-            {
-                using (var b = new SolidBrush(Color.FromArgb(70, 0, 50, 45)))
-                    g.FillPath(b, path);
-                using (var p = new Pen(Color.FromArgb(80, 0, 210, 185), s*0.003f))
-                    g.DrawPath(p, path);
-            }
-            int   ghPx  = (int)(s * 0.040f);
-            using (var font  = new Font("Segoe UI", ghPx, FontStyle.Bold, GraphicsUnit.Pixel))
-            using (var brush = new SolidBrush(Color.FromArgb(190, 0, 210, 185)))
-            {
-                SizeF msz = g.MeasureString("GH", font);
-                g.DrawString("GH", font, brush,
-                    ghbX + (ghbW - msz.Width) / 2f,
-                    ghbY + (ghbH - msz.Height) / 2f);
-            }
         });
     }
 

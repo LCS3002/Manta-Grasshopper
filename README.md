@@ -9,11 +9,11 @@
   <img alt="Platform: Rhino 8" src="https://img.shields.io/badge/Rhino-8-darkblue.svg"/>
   <img alt=".NET 4.8" src="https://img.shields.io/badge/.NET-4.8-purple.svg"/>
   <img alt="Grasshopper" src="https://img.shields.io/badge/Grasshopper-Plugin-green.svg"/>
-  <img alt="60fps" src="https://img.shields.io/badge/animation-60fps-teal.svg"/>
+  <img alt="9 components" src="https://img.shields.io/badge/components-9-teal.svg"/>
 </p>
 
-> **Environmental analysis for Grasshopper — one plugin, all physics.**  
-> Acoustic noise heat-maps, animated wind streamlines, solar path sweep, pressure wavefronts. Self-contained, no external dependencies.
+> **One Grasshopper plugin for all environmental physics.**  
+> Acoustic noise mapping, animated wind streamlines, solar path analysis, and pressure wave visualisation — live in the Rhino viewport at 60fps.
 
 ---
 
@@ -29,19 +29,19 @@ Manta rays are masters of fluid dynamics — they read pressure fields, glide on
 
 | Icon | Name | Nickname | What it does |
 |------|------|----------|--------------|
-| ![](BatSource_24.png) | **BT Source** | BT Src | Point and line (road/rail) noise sources |
-| ![](BatMesh_24.png)   | **BT Mesh**   | BT Msh | Convert any geometry to an analysis mesh |
-| ![](BatNoise_24.png)  | **BT Noise**  | BT Nse | Direct + reflected noise, heat-map, compliance |
-| ![](BatInterior_24.png) | **BT Interior** | BT Int | Interior exposure score — wire to Galapagos |
-| ![](BatContours_24.png) | **BT Contours** | BT Con | Isodecibel contour polylines as a data tree |
-| ![](BatLegend_24.png) | **BT Legend** | BT Leg | dB colour-scale legend in the Rhino viewport |
+| ![](BatSource_24.png) | **MN Source** | MN Src | Define point and line noise sources (road, rail) |
+| ![](BatMesh_24.png) | **MN Mesh** | MN Msh | Convert any geometry to analysis mesh |
+| ![](BatNoise_24.png) | **MN Noise** | MN Nse | Acoustic analysis — false-colour heat-map, reflections |
+| ![](BatInterior_24.png) | **MN Interior** | MN Int | Interior exposure score for Galapagos optimisation |
+| ![](BatContours_24.png) | **MN Contours** | MN Con | Isodecibel contour polylines |
+| ![](BatLegend_24.png) | **MN Legend** | MN Leg | Colour-scale legend in the Rhino viewport |
 
 ### Environment — `Analysis → Environment`
 
 | Icon | Name | Nickname | What it does |
 |------|------|----------|--------------|
-| ![](MantaWind_24.png)     | **MN Wind**     | MN Wnd | Animated wind streamlines via curl-noise turbulence |
-| ![](MantaSun_24.png)      | **MN Sun**      | MN Sun | Animated solar path + real-time shadow sweep |
+| ![](MantaWind_24.png) | **MN Wind** | MN Wnd | Animated wind streamlines via curl-noise turbulence |
+| ![](MantaSun_24.png) | **MN Sun** | MN Sun | Animated solar path + real-time shadow sweep |
 | ![](MantaPressure_24.png) | **MN Pressure** | MN Pre | Animated acoustic pressure wavefronts |
 
 ---
@@ -49,223 +49,154 @@ Manta rays are masters of fluid dynamics — they read pressure fields, glide on
 ## Typical workflow
 
 ```
-  BT Source ──► BT Mesh ──► BT Noise ──► BT Contours
-                   │                          │
-                   │                     BT Legend
-                   │
-                   ├──────────────────► MN Wind
-                   └──────────────────► MN Sun
-
-  BT Source ──────────────────────────► MN Pressure
-  BT Noise  ──► BT Interior ──► Galapagos (minimise)
+MN Source ──► MN Mesh ──► MN Noise ──► MN Interior ──► Galapagos
+                │              │
+                │              └──► MN Contours ──► MN Legend
+                │
+                ├──► MN Wind      (wind over same facade mesh)
+                └──► MN Sun       (solar on same mesh)
+MN Source ──────────► MN Pressure (animated wavefronts from same sources)
 ```
 
 ---
 
-## Acoustic model
+## Acoustic reference
 
-### Direct sound
+### MN Source
 
-```
-L = L_src − 20·log₁₀(d) − 11 + 10·log₁₀(cosθ + 0.01)
-```
-
-Multiple sources combine by energy summation: `L_total = 10·log₁₀(Σ 10^(Lᵢ/10))`
-
-### First-order reflections
+Point sources and/or line sources (road/rail centrelines). Line sources subdivide into N equal-power sub-points:
 
 ```
-L_ref = L_src − 20·log₁₀(d₁+d₂) − 11 + 10·log₁₀(cosθ + 0.01) − α_dB − mat_loss
+L_sub = L_total − 10·log10(N)
 ```
 
-### Interior exposure score
-
-```
-E_int = Σ [ 10^(dBᵢ/10) × area_i / dist_i² ]
-Interior dB = 10·log₁₀(E_int)
-```
-
-Connect **Interior dB** → Galapagos fitness input → **Minimise**.
+| Input | Default | Description |
+|-------|---------|-------------|
+| P – Point Sources | — | Individual noise source points |
+| dBP – Point dB | — | Sound power level per point (dB SPL) |
+| T – Rail/Road | — | Line-source curve (road or rail centreline) |
+| dBT – Line dB | — | Sound power level per line source |
+| N – Subdivisions | 20 | Sub-sources per line source |
 
 ---
 
-## Wind model
+### MN Mesh
 
-Particles advect through a **curl-noise velocity field** at ~60fps. Curl noise is divergence-free — particles never bunch or spread, producing organic-looking streamlines identical to real CFD visualisations.
+Converts Mesh, Surface, Brep, SubD or Extrusion to a normals-ready analysis mesh. Quality 0–3 maps to Rhino's fast/default/analysis/fine meshing parameters.
+
+---
+
+### MN Noise
+
+Core acoustic analysis. Computes per-face dB using:
+
+```
+L = L_src − 20·log10(d) − 11 + 10·log10(cosθ + 0.01)
+L_total = 10·log10(Σ 10^(Li/10))
+```
+
+First-order reflections (optional):
+```
+L_ref = L_src − 20·log10(d1+d2) − 11 + 10·log10(cosθ+0.01) − α_dB − mat_loss
+```
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| M – Mesh | — | From MN Mesh |
+| S – Sources | — | From MN Source |
+| dB – Levels | — | From MN Source |
+| Min / Max | auto | Pin colour-scale bounds |
+| R – Reflections | false | Enable first-order reflections |
+| α – Absorption | 3 dB | Reflection loss per bounce |
+| Mat – Materials | — | Per-face absorption coefficient 0–1 |
+| Lim – Limit dB | — | Activates compliance overlay (green/yellow/red) |
+
+| Output | Description |
+|--------|-------------|
+| M – Mesh | Vertex-coloured facade mesh |
+| dB – Face dB | Per-face total → MN Interior / MN Contours |
+| Min / Max | Colour-scale bounds → MN Legend |
+| ExA – Exceeded m² | Facade area exceeding limit |
+| Ex% – % Exceeded | Percentage of facade exceeding limit |
+| RM – Reflect Mesh | False-colour reflection hotspot mesh |
+
+---
+
+### MN Interior
+
+Scores interior noise exposure as a single dB fitness scalar — wire to Galapagos and set to **Minimise**:
+
+```
+Score = 10·log10(Σ [10^(dBi/10) × area_i / dist_i²])
+```
+
+---
+
+### MN Contours
+
+Marching-triangles isodecibel contour extraction. Connect `{50,55,60,65,70,75}` to Levels for a full contour map. Output is a GH tree — one branch per level.
+
+---
+
+### MN Legend
+
+Draws a gradient colour-scale bar in the Rhino viewport. Position with Origin, size with Height/Width. Optional limit line overlay.
+
+---
+
+## Environment reference
+
+### MN Wind
+
+Particles advect through a curl-noise velocity field at ~60fps. Curl noise is divergence-free — trajectories are organic, not bunched.
 
 ```
 v(x,t) = V_wind + curl( N(x/scale + t·0.1, y/scale, z/scale) ) × turbulence
 ```
 
-Positions integrated with **RK2 (midpoint method)**. Golden-ratio phase offsets spread particles evenly along each path.
+Integrated with **RK2 (midpoint method)**. Golden-ratio phase offsets spread particles evenly.
 
----
-
-## Solar model
-
-Real solar position via the **NOAA SPA algorithm** — accurate to ±0.01° for 2000–2050. The sun disc animates across the sky, painting a warm/cool shadow gradient in real time.
-
----
-
-## Component reference
-
-### BT Source
-
-| # | Input | Default | Description |
-|---|-------|---------|-------------|
-| 0 | Point Sources | — | Individual point sources |
-| 1 | Point dB | — | Level for each point source |
-| 2 | Rail/Road | — | Line sources (roads, railways) |
-| 3 | Line dB | — | Level for each line source |
-| 4 | Subdivisions | 20 | Sub-points along each curve |
-
-Outputs: **Sources** (Point list), **Levels** (dB list), **Count**.
-
----
-
-### BT Mesh
-
-| # | Input | Default | Description |
-|---|-------|---------|-------------|
-| 0 | Geometry | — | Mesh, Surface, Brep, SubD, Extrusion |
-| 1 | Quality | 1 | 0 fast → 3 fine |
-
-Outputs: **Mesh**, **Face Count**, **Area** (m²).
-
----
-
-### BT Noise
-
-| # | Input | Default | Description |
-|---|-------|---------|-------------|
-| 0 | Mesh | — | From BT Mesh |
-| 1 | Sources | — | From BT Source |
-| 2 | Levels | — | From BT Source |
-| 3 | Min dB | auto | Pin colour-scale lower bound |
-| 4 | Max dB | auto | Pin colour-scale upper bound |
-| 5 | Reflections | false | First-order ray-cast reflections |
-| 6 | Absorption α | 3.0 | Bounce loss per reflection (dB) |
-| 7 | Materials | — | Per-face absorption coefficient 0–1 |
-| 8 | Limit dB | — | WHO / regulatory limit |
-
-| # | Output | Description |
-|---|--------|-------------|
-| 0 | Mesh | Vertex-coloured facade mesh |
-| 1 | Face dB | Per-face dB |
-| 2 | Min dB | Colour-scale minimum |
-| 3 | Max dB | Colour-scale maximum |
-| 4 | Exceeded m² | Facade area above Limit dB |
-| 5 | % Exceeded | Percentage above limit |
-| 6 | Reflect Mesh | Reflection hotspot heat-map |
-
----
-
-### BT Interior
-
-| # | Input | Description |
-|---|-------|-------------|
-| 0 | Mesh | From BT Noise |
-| 1 | Face dB | From BT Noise |
-| 2 | Interior Pt | Point inside the building |
-
-Outputs: **Interior dB** (→ Galapagos), **Area-wtd mean**, **Peak face dB**.
-
----
-
-### BT Contours
-
-| # | Input | Description |
-|---|-------|-------------|
-| 0 | Mesh | From BT Noise |
-| 1 | Face dB | From BT Noise |
-| 2 | Levels | dB levels to contour — e.g. {50,55,60,65,70,75} |
-
-Outputs: **Contours** (curve data tree), **Levels**, **Count**.
-
----
-
-### BT Legend
-
-| # | Input | Default | Description |
-|---|-------|---------|-------------|
-| 0 | Origin | (0,0,0) | Base-left corner in world space |
-| 1 | Min dB | 40 | From BT Noise Min |
-| 2 | Max dB | 80 | From BT Noise Max |
-| 3 | Height | 5 | Bar height (model units) |
-| 4 | Width | 1 | Bar width (model units) |
-| 5 | Ticks | 5 | Number of tick labels |
-| 6 | Limit dB | — | Draw limit line on legend |
-
-Outputs: **Legend Mesh**, **Labels**, **Label Pts**.
-
----
-
-### MN Wind
-
-| # | Input | Default | Description |
-|---|-------|---------|-------------|
-| 0 | Mesh | — | Analysis mesh |
-| 1 | Wind Dir | (1,0,0) | Wind direction vector |
-| 2 | Speed | 5.0 | Wind speed |
-| 3 | Turbulence | 1.5 | Curl-noise intensity |
-| 4 | Scale | 10.0 | Noise scale relative to geometry |
-| 5 | Particles | 80 | Number of streamline particles |
-| 6 | Trail | 20 | Trail length in steps |
-| 7 | Seed | 0 | Random seed |
-
-Outputs: **Streamlines** (polylines), **Field Pts** (vectors at face centres).
+| Input | Default | Description |
+|-------|---------|-------------|
+| M – Mesh | — | Analysis mesh |
+| V – Wind Dir | (1,0,0) | Wind direction (normalised) |
+| Sp – Speed | 5.0 | Animation rate |
+| Tu – Turbulence | 1.5 | Curl-noise intensity (0 = laminar) |
+| Sc – Scale | 10.0 | Noise scale relative to geometry |
+| N – Particles | 80 | Streamline count |
+| Tr – Trail | 20 | Trail length (steps) |
+| S – Seed | 0 | Random seed |
 
 ---
 
 ### MN Sun
 
-| # | Input | Default | Description |
-|---|-------|---------|-------------|
-| 0 | Mesh | — | Analysis mesh |
-| 1 | Latitude | 51.5 | Site latitude (°N) |
-| 2 | Longitude | −0.1 | Site longitude (°E) |
-| 3 | Year | 2026 | Year |
-| 4 | Month | 6 | Month (1–12) |
-| 5 | Day | 21 | Day (1–31) |
-| 6 | Start Hr | 6.0 | Analysis window start (UTC hours) |
-| 7 | End Hr | 20.0 | Analysis window end (UTC hours) |
-| 8 | Anim Spd | 1.0 | Animation speed multiplier |
+NOAA SPA algorithm — accurate to ±0.01° for 2000–2050. Animates the sun across the sky, painting the mesh with warm/cool shadow colours in real time.
 
-Outputs: **Sun Path**, **Sun Dir**, **Elevation**, **Azimuth**, **Face Solar**, **Peak Hours**.
+| Input | Default | Description |
+|-------|---------|-------------|
+| M – Mesh | — | Analysis mesh |
+| Lat | 51.5 | Latitude (°N) |
+| Lon | −0.1 | Longitude (°E) |
+| Yr / Mo / Dy | 2026-06-21 | Date |
+| H0 / H1 | 6 / 20 | Analysis window (UTC hours) |
+| As – Anim Spd | 1.0 | Speed multiplier |
+
+Outputs: sun path arc, current direction/elevation/azimuth, per-face solar incidence, peak sun hours per face.
 
 ---
 
 ### MN Pressure
 
-| # | Input | Default | Description |
-|---|-------|---------|-------------|
-| 0 | Sources | — | Noise source points (from BT Source) |
-| 1 | Levels | — | dB levels per source (from BT Source) |
-| 2 | Wave Speed | 343 | Speed of sound (m/s) |
-| 3 | Scale | 0.05 | Visual scale |
-| 4 | Rings | 5 | Wavefront rings per source |
+Spherical pressure wavefronts from noise sources. Each source emits concentric rings across three planes. Colour shifts warm (high dB) → cool (low dB).
 
----
-
-## Colour palettes
-
-### Acoustic (BT components)
-
-| Colour | Maps to |
-|--------|---------|
-| Blue `(0, 0, 255)` | Scale minimum — quietest |
-| Cyan `(0, 220, 255)` | 25 % |
-| Yellow `(255, 240, 0)` | 50 % |
-| Orange `(255, 110, 0)` | 75 % |
-| Red `(255, 0, 0)` | Scale maximum — loudest |
-
-### Environment (MN components)
-
-| Colour | Hex | Used for |
-|--------|-----|---------|
-| Navy | `#080C1C` | Background |
-| Teal | `#00D2B4` | Wind trails, icons, pressure arcs |
-| Cyan | `#3CDCFF` | Particle heads, sun disc, glows |
+| Input | Default | Description |
+|-------|---------|-------------|
+| S – Sources | — | From MN Source |
+| dB – Levels | — | From MN Source |
+| c – Wave Speed | 343 | Speed of sound (m/s) |
+| Sc – Scale | 0.05 | Visual scale |
+| R – Rings | 5 | Wavefront rings per source |
 
 ---
 
@@ -276,12 +207,12 @@ Outputs: **Sun Path**, **Sun Dir**, **Elevation**, **Azimuth**, **Face Solar**, 
 Requirements: .NET SDK, Rhino 8
 
 ```bat
-git clone https://github.com/LCS3002/NoiseFacadeGH
-cd NoiseFacadeGH
+git clone https://github.com/LCS3002/Manta-Grasshopper
+cd Manta-Grasshopper
 build.bat
 ```
 
-`build.bat` generates icons, compiles, and installs `Manta.gha` automatically. Close Rhino first.
+`build.bat` generates icons, compiles, and installs `Manta.gha`. Close Rhino before running.
 
 ### Manual install
 
@@ -293,35 +224,41 @@ Copy `Manta.gha` to `%APPDATA%\Grasshopper\Libraries\` and restart Rhino.
 
 - Rhino 8 (RhinoCommon 8.x, Grasshopper 1.x)
 - .NET Framework 4.8
-- No additional plugins required
+- No external plugin dependencies
+
+---
+
+## Colour palette
+
+| Colour | Hex | Used for |
+|--------|-----|---------|
+| Navy | `#080C1C` | Background |
+| Teal | `#00D2B4` | Environment icons, wind trails |
+| Cyan | `#3CDCFF` | Particle heads, solar glow |
+| Amber | `#F5A623` | Acoustic icons, source indicators |
 
 ---
 
 ## Project structure
 
 ```
-NoiseFacadeGH/
-├── BatInfo.cs              # Assembly info, icon loader, brand colours
-├── BatAcoustics.cs         # Acoustic math (direct, reflections, interior, contours)
-├── BatContourAlgo.cs       # Marching-triangles isodecibel extractor
-├── BatSourceComponent.cs   # BT Source
-├── BatMeshComponent.cs     # BT Mesh
-├── BatNoiseComponent.cs    # BT Noise
-├── BatInteriorComponent.cs # BT Interior
-├── BatContoursComponent.cs # BT Contours
-├── BatLegendComponent.cs   # BT Legend
-├── MantaMath.cs            # Curl noise, RK2 advection, NOAA SPA, shadow
-├── MantaWindComponent.cs   # MN Wind
-├── MantaSunComponent.cs    # MN Sun
-├── MantaPressureComponent.cs # MN Pressure
-├── NoiseFacadeGH.csproj    # SDK-style .NET 4.8 project
-├── build.bat               # One-click build + install
-├── Manta_24/48.png         # Assembly icons — manta ray (embedded)
-├── BatSource/Mesh/.../24.png # BT component icons (embedded)
-├── MantaWind/Sun/Pressure_24.png # MN component icons (embedded)
-├── Manta_logo.png          # 512px logo for GitHub
-├── GenerateIcon/           # Icon generator (System.Drawing, no Rhino dep)
-└── MathTest/               # 65-test battle suite for all math
+Manta-Grasshopper/
+├── BatInfo.cs                  # Assembly info, icon loader, brand colours
+├── BatAcoustics.cs             # Acoustic math — direct, reflections, energy sum
+├── BatContourAlgo.cs           # Marching-triangles isodecibel contour extraction
+├── BatSourceComponent.cs       # MN Source
+├── BatMeshComponent.cs         # MN Mesh
+├── BatNoiseComponent.cs        # MN Noise
+├── BatInteriorComponent.cs     # MN Interior
+├── BatContoursComponent.cs     # MN Contours
+├── BatLegendComponent.cs       # MN Legend
+├── MantaMath.cs                # Curl noise, RK2 advection, NOAA SPA, shadow
+├── MantaWindComponent.cs       # MN Wind
+├── MantaSunComponent.cs        # MN Sun
+├── MantaPressureComponent.cs   # MN Pressure
+├── NoiseFacadeGH.csproj        # SDK-style .NET 4.8 project
+├── build.bat                   # One-click build + install
+└── GenerateIcon/               # Programmatic icon generator (System.Drawing)
 ```
 
 ---
